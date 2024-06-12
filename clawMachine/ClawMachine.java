@@ -32,7 +32,8 @@ public class ClawMachine extends LinearOpMode {
     //wheel info here
 
     private final double PINCERS_START_POS = 0;
-    private final double PINCER_POS_OPEN = 1;
+    private final double PINCERS_POS_OPEN = 1;
+    private final double PINCERS_POS_CLOSED = 0;
 
     private double leftDrivePower = 0;
     private double rightDrivePower = 0;
@@ -44,6 +45,8 @@ public class ClawMachine extends LinearOpMode {
 
     private boolean leftLimitIsPressed = false;
     private boolean rightLimitIsPressed = false;
+
+    private boolean pincersHandled = false;
 
     @Override
     public void runOpMode() {
@@ -58,14 +61,35 @@ public class ClawMachine extends LinearOpMode {
             positionClaw();
             deployClaw();
 
-            //previousGamepad1.copy(currentGamepad1);
-            //currentGamepad1.copy(gamepad1);
-            //may need ^^^ for isHandled?
+            previousGamepad1.copy(currentGamepad1);
+            currentGamepad1.copy(gamepad1);
         }
     }
 
     public void driveWithSticks() {
-        //drive code here
+        //drive forward and backward
+        if (gamepad1.left_stick_y < -0.1) {
+            leftDriveMotor.setPower(gamepad1.left_stick_y);
+            rightDriveMotor.setPower(gamepad1.left_stick_y);
+        } else if (gamepad1.left_stick_y > 0.1) {
+            leftDriveMotor.setPower(-gamepad1.left_stick_y);
+            rightDriveMotor.setPower(gamepad1.left_stick_y);
+        } else {
+            leftDriveMotor.setPower(0);
+            rightDriveMotor.setPower(0);
+        }
+
+        //turn
+        if (gamepad1.right_stick_x > 0.1) {
+            leftDriveMotor.setPower(gamepad1.right_stick_x);
+            rightDriveMotor.setPower(-gamepad1.right_stick_x);
+        } else if (gamepad1.right_stick_x < -0.1) {
+            leftDriveMotor.setPower(-gamepad1.right_stick_x);
+            rightDriveMotor.setPower(gamepad1.right_stick_x);
+        } else {
+            leftDriveMotor.setPower(0);
+            rightDriveMotor.setPower(0);
+        }
     }
 
     public void positionClaw() {
@@ -96,10 +120,16 @@ public class ClawMachine extends LinearOpMode {
             clawRappel.setPower(0);
         }
 
+        if (currentGamepad1.a && !previousGamepad1.a) {
+            pincersHandled = !pincersHandled; //handled = open
+        }
+
         //activate claw pincers
-        if (gamepad1.a &&) {
-            clawPincers.setPosition(PINCER_POS_OPEN);
-        } else if (gamepad1.a &&)
+        if (gamepad1.a && !pincersHandled) {
+            clawPincers.setPosition(PINCERS_POS_OPEN);
+        } else if (gamepad1.a && pincersHandled) {
+            clawPincers.setPosition(PINCERS_POS_CLOSED);
+        }
     }
 
     public void innit() {
